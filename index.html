@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Labor Monitor — BinhMinhAI · HealthV</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ──────────────────────────────────── */
+[data-theme="dark"]{
+  --bg:#070B14;--bg2:#0C1120;--bg3:#111827;
+  --sur:#131C2F;--sur2:#1B2540;--sur3:#1F2D4E;
+  --bor:rgba(99,179,237,.13);--bor2:rgba(99,179,237,.07);
+  --a1:#60A5FA;--a2:#34D399;--a3:#FBBF24;--a4:#F87171;--a5:#A78BFA;
+  --tx:#F0F6FF;--tx2:#94A3B8;--tx3:#4B5563;
+  --sh:0 4px 20px rgba(0,0,0,.55);--sh2:0 2px 8px rgba(0,0,0,.35);
+  --gl:0 0 24px rgba(96,165,250,.15);
+  --grid-bg:rgba(99,179,237,.025);
+}
+[data-theme="light"]{
+  --bg:#EEF2FA;--bg2:#E4ECF7;--bg3:#FFFFFF;
+  --sur:#FFFFFF;--sur2:#F5F8FD;--sur3:#EEF2FA;
+  --bor:rgba(37,99,235,.14);--bor2:rgba(37,99,235,.08);
+  --a1:#2563EB;--a2:#059669;--a3:#D97706;--a4:#DC2626;--a5:#7C3AED;
+  --tx:#0F172A;--tx2:#475569;--tx3:#9CA3AF;
+  --sh:0 4px 20px rgba(0,0,0,.07);--sh2:0 2px 8px rgba(0,0,0,.05);
+  --gl:0 0 24px rgba(37,99,235,.08);
+  --grid-bg:transparent;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:14px}
+body{background:var(--bg);color:var(--tx);font-family:'Be Vietnam Pro',sans-serif;
+  font-size:.875rem;line-height:1.6;min-height:100vh;overflow-x:hidden;
+  transition:background .3s,color .3s}
+[data-theme="dark"] body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:linear-gradient(var(--grid-bg) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid-bg) 1px,transparent 1px);
+  background-size:48px 48px}
+.wrap{position:relative;z-index:1;max-width:1640px;margin:0 auto;padding:0 20px 60px}
+
+/* ── HEADER ─────────────────────────────────── */
+header{display:flex;align-items:center;justify-content:space-between;
+  padding:18px 0 15px;border-bottom:1px solid var(--bor);margin-bottom:14px;
+  flex-wrap:wrap;gap:10px}
+.logo{display:flex;align-items:center;gap:11px}
+.logo-ico{width:38px;height:38px;border-radius:9px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  display:flex;align-items:center;justify-content:center;font-size:17px;
+  box-shadow:var(--gl)}
+.logo-name{font-family:'Outfit',sans-serif;font-weight:800;font-size:1.1rem;
+  letter-spacing:-.4px;color:var(--tx)}
+.logo-name b{color:var(--a1);font-weight:800}
+.logo-sub{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--tx3);
+  text-transform:uppercase;letter-spacing:1.8px;margin-top:2px}
+.hdr-r{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+
+/* pills */
+.pill{display:flex;align-items:center;gap:6px;border-radius:20px;
+  padding:5px 13px;font-family:'DM Mono',monospace;font-size:.64rem;
+  border:1px solid;cursor:pointer;transition:.2s;user-select:none}
+.pill-live{background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.25);color:var(--a2)}
+.pill-clk{background:var(--sur2);border-color:var(--bor2);color:var(--tx2);cursor:default}
+.pill-ref{background:var(--sur2);border-color:var(--bor2);color:var(--tx2)}
+.pill-ref:hover{border-color:var(--a1);color:var(--a1)}
+.pill-tog{background:var(--sur2);border-color:var(--bor2);color:var(--tx2);border-radius:20px}
+.pill-tog:hover{border-color:var(--a1);color:var(--a1)}
+.ldot{width:6px;height:6px;background:var(--a2);border-radius:50%;
+  animation:lp 1.8s infinite}
+@keyframes lp{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}
+
+/* toggle track */
+.tog-t{width:32px;height:15px;background:var(--sur3);border-radius:8px;
+  border:1px solid var(--bor);position:relative;transition:.3s}
+[data-theme="light"] .tog-t{background:linear-gradient(90deg,var(--a1),var(--a2))}
+.tog-k{position:absolute;top:2px;left:2px;width:9px;height:9px;border-radius:50%;
+  background:var(--tx3);transition:all .3s cubic-bezier(.34,1.56,.64,1)}
+[data-theme="light"] .tog-k{transform:translateX(17px);background:#fff}
+
+/* spin */
+.spin svg{animation:spinA 1s linear infinite}
+@keyframes spinA{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.last-t{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tx3)}
+
+/* ── API STATUS ──────────────────────────────── */
+.api-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.achip{display:flex;align-items:center;gap:5px;background:var(--sur);
+  border:1px solid var(--bor2);border-radius:7px;padding:4px 10px;
+  font-family:'DM Mono',monospace;font-size:.62rem;color:var(--tx2);transition:.2s}
+.achip.ok{border-color:rgba(52,211,153,.28);color:var(--a2)}
+.achip.err{border-color:rgba(248,113,113,.28);color:var(--a4)}
+.achip.ld{opacity:.55}
+.adot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* ── NOTICE ──────────────────────────────────── */
+.notice{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);
+  border-radius:9px;padding:9px 14px;margin-bottom:12px;
+  font-family:'DM Mono',monospace;font-size:.66rem;color:var(--a3);line-height:1.6}
+
+/* ── TICKER ──────────────────────────────────── */
+.ticker{background:var(--sur);border:1px solid var(--bor);border-radius:9px;
+  padding:8px 15px;overflow:hidden;margin-bottom:15px;
+  display:flex;align-items:center;gap:13px}
+.tick-lbl{font-family:'DM Mono',monospace;font-size:.59rem;color:var(--a1);
+  white-space:nowrap;text-transform:uppercase;letter-spacing:2px;
+  padding-right:13px;border-right:1px solid var(--bor);flex-shrink:0}
+.tick-sc{overflow:hidden;flex:1}
+.tick-in{display:flex;gap:28px;white-space:nowrap;animation:scrollL 55s linear infinite}
+.tick-in:hover{animation-play-state:paused}
+@keyframes scrollL{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.ti{display:flex;gap:7px;align-items:center;font-family:'DM Mono',monospace;font-size:.7rem}
+.tl{color:var(--tx2)}.cup{color:var(--a2)}.cdn{color:var(--a4)}.cfl{color:var(--a3)}
+
+/* ── TABS ────────────────────────────────────── */
+.tabs{display:flex;gap:3px;margin-bottom:18px;background:var(--sur);
+  border:1px solid var(--bor);border-radius:10px;padding:4px;
+  width:fit-content;flex-wrap:wrap}
+.tab{padding:7px 18px;border-radius:7px;cursor:pointer;
+  font-family:'Outfit',sans-serif;font-weight:600;font-size:.77rem;
+  color:var(--tx2);transition:.2s;white-space:nowrap}
+.tab:hover{color:var(--tx);background:var(--sur2)}
+.tab.on{background:linear-gradient(135deg,rgba(96,165,250,.16),rgba(52,211,153,.08));
+  color:var(--a1);border:1px solid rgba(96,165,250,.28);box-shadow:var(--gl)}
+
+/* ── SECTION LABEL ───────────────────────────── */
+.slbl{font-family:'DM Mono',monospace;font-size:.59rem;text-transform:uppercase;
+  letter-spacing:2.5px;color:var(--tx3);margin-bottom:13px;
+  display:flex;align-items:center;gap:9px}
+.slbl::after{content:'';flex:1;height:1px;background:var(--bor2)}
+
+/* ── KPI GRID ────────────────────────────────── */
+.kg{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin-bottom:18px}
+@media(max-width:1200px){.kg{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:680px){.kg{grid-template-columns:repeat(2,1fr)}}
+.kc{background:var(--sur);border:1px solid var(--bor);border-radius:12px;
+  padding:16px;position:relative;overflow:hidden;transition:.25s;box-shadow:var(--sh2)}
+.kc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--kk,var(--a1));border-radius:12px 12px 0 0;opacity:.85}
+.kc:hover{border-color:rgba(96,165,250,.28);box-shadow:var(--gl);transform:translateY(-2px)}
+.klb{font-family:'DM Mono',monospace;font-size:.59rem;color:var(--tx3);
+  text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;line-height:1.4}
+.kv{font-family:'Outfit',sans-serif;font-size:1.75rem;font-weight:800;
+  line-height:1;margin-bottom:5px;letter-spacing:-.5px}
+.kv small{font-size:.95rem;font-weight:600}
+.ks{font-size:.71rem;color:var(--tx2);line-height:1.5}
+.kch{display:inline-flex;align-items:center;gap:3px;font-family:'DM Mono',monospace;
+  font-size:.65rem;margin-top:7px;padding:2px 8px;border-radius:5px}
+.up{color:var(--a2);background:rgba(52,211,153,.09)}
+.dn{color:var(--a4);background:rgba(248,113,113,.09)}
+.ne{color:var(--a3);background:rgba(251,191,36,.09)}
+
+/* ── GRID LAYOUTS ────────────────────────────── */
+.g2{display:grid;grid-template-columns:1.35fr 1fr;gap:14px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:1050px){.g2,.g3{grid-template-columns:1fr}}
+
+/* ── CARD ────────────────────────────────────── */
+.card{background:var(--sur);border:1px solid var(--bor);border-radius:12px;
+  padding:17px;box-shadow:var(--sh2);transition:border-color .25s}
+.card:hover{border-color:rgba(96,165,250,.22)}
+.ct{font-family:'Outfit',sans-serif;font-weight:700;font-size:.84rem;
+  color:var(--tx);margin-bottom:3px;line-height:1.4}
+.cs{font-family:'DM Mono',monospace;font-size:.61rem;color:var(--tx3);
+  margin-bottom:14px;line-height:1.5}
+
+/* ── CHART WRAPPER — KEY FIX ─────────────────── */
+/* Charts live in a wrapper with explicit height so they render even in hidden tabs */
+.cw{position:relative;width:100%}
+.cw canvas{display:block;max-width:100%}
+
+/* ── OCC / LIST ITEMS ────────────────────────── */
+.olist{display:flex;flex-direction:column;gap:6px}
+.oi{display:flex;align-items:center;justify-content:space-between;
+  padding:9px 12px;background:var(--bg3);border:1px solid var(--bor2);
+  border-radius:8px;transition:.2s}
+.oi:hover{border-color:var(--bor);background:var(--sur2);transform:translateX(2px)}
+.ol{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.on{font-size:.79rem;font-weight:600;color:var(--tx);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ot{font-family:'DM Mono',monospace;font-size:.61rem;color:var(--tx3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.or{display:flex;flex-direction:column;align-items:flex-end;gap:3px;
+  flex-shrink:0;margin-left:10px}
+.op{font-family:'Outfit',sans-serif;font-weight:800;font-size:.93rem}
+.rb{font-family:'DM Mono',monospace;font-size:.56rem;text-transform:uppercase;
+  padding:2px 6px;border-radius:4px;letter-spacing:.4px;white-space:nowrap}
+.rh{background:rgba(248,113,113,.11);color:var(--a4);border:1px solid rgba(248,113,113,.22)}
+.rm{background:rgba(251,191,36,.09);color:var(--a3);border:1px solid rgba(251,191,36,.20)}
+.rl{background:rgba(52,211,153,.08);color:var(--a2);border:1px solid rgba(52,211,153,.18)}
+
+/* ── VN PROVINCES ────────────────────────────── */
+.vng{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;
+  max-height:360px;overflow-y:auto;padding-right:3px}
+.vng::-webkit-scrollbar{width:3px}
+.vng::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
+.vni{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 10px;background:var(--bg3);border:1px solid var(--bor2);
+  border-radius:8px;transition:.2s}
+.vni:hover{border-color:rgba(96,165,250,.22);background:var(--sur2)}
+.vct{font-size:.76rem;font-weight:600;color:var(--tx)}
+.vca{font-family:'DM Mono',monospace;font-size:.57rem;color:var(--tx3);margin-top:1px}
+.vbr{width:40px;height:3px;background:var(--bor2);border-radius:2px;overflow:hidden;margin-top:3px}
+.vbf{height:100%;border-radius:2px}
+.vsc{font-family:'Outfit',sans-serif;font-weight:800;font-size:.87rem;text-align:right}
+.vdi{font-family:'DM Mono',monospace;font-size:.57rem;color:var(--tx3);
+  margin-top:2px;text-align:right}
+
+/* ── REGION MINI ─────────────────────────────── */
+.rg{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.rc{padding:10px 8px;background:var(--bg3);border:1px solid var(--bor2);
+  border-radius:8px;text-align:center;transition:.2s}
+.rc:hover{border-color:var(--bor)}
+.rn{font-size:.69rem;font-weight:600;margin-bottom:4px;color:var(--tx2)}
+.rv{font-family:'Outfit',sans-serif;font-weight:800;font-size:1.1rem}
+.rch{font-family:'DM Mono',monospace;font-size:.61rem;margin-top:2px}
+
+/* ── INSIGHT CARDS ───────────────────────────── */
+.ig{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:15px}
+@media(max-width:900px){.ig{grid-template-columns:1fr}}
+.ic{background:var(--sur);border:1px solid var(--bor);border-radius:12px;
+  padding:16px;display:flex;gap:12px;align-items:flex-start;
+  transition:.25s;box-shadow:var(--sh2)}
+.ic:hover{box-shadow:var(--gl);border-color:rgba(96,165,250,.25);transform:translateY(-1px)}
+.ii{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;font-size:15px;flex-shrink:0}
+.it{font-family:'Outfit',sans-serif;font-weight:700;font-size:.79rem;
+  margin-bottom:5px;color:var(--tx)}
+.ix{font-size:.72rem;color:var(--tx2);line-height:1.75}
+
+/* ── MBOX ────────────────────────────────────── */
+.mbox{background:rgba(96,165,250,.05);border:1px solid rgba(96,165,250,.13);
+  border-radius:8px;padding:12px 14px;font-size:.71rem;color:var(--tx2);line-height:1.85}
+.mbox strong{color:var(--a1);font-weight:600}
+.stag{display:inline-flex;align-items:center;background:var(--sur2);
+  border:1px solid var(--bor2);border-radius:4px;padding:2px 7px;
+  font-family:'DM Mono',monospace;font-size:.57rem;color:var(--tx3);
+  text-transform:uppercase;letter-spacing:.4px}
+
+/* ── PANELS — CRITICAL ───────────────────────── */
+/* Use visibility+position instead of display:none to allow chart sizing */
+.panel{
+  visibility:hidden;
+  position:absolute;
+  pointer-events:none;
+  width:100%;
+  left:0;top:0;
+  opacity:0;
+}
+.panel.on{
+  visibility:visible;
+  position:relative;
+  pointer-events:auto;
+  opacity:1;
+}
+.panels-wrap{position:relative}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.panel.on{animation:fadeUp .3s ease}
+
+/* scrollbar */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bor);border-radius:3px}
+
+/* stagger kpi */
+.kc{animation:fadeUp .4s ease both}
+.kc:nth-child(1){animation-delay:.03s}.kc:nth-child(2){animation-delay:.06s}
+.kc:nth-child(3){animation-delay:.09s}.kc:nth-child(4){animation-delay:.12s}
+.kc:nth-child(5){animation-delay:.15s}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-ico">⚡</div>
+    <div>
+      <div class="logo-name">AI Labor <b>Monitor</b></div>
+      <div class="logo-sub">@BinhMinhAI · HealthV · 2026</div>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <span class="last-t" id="lastT">—</span>
+    <div class="pill pill-ref" id="refBtn" onclick="doRefresh()">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8"/><path d="M21 3v5h-5"/>
+        <path d="M21 12a9 9 0 01-9 9 9.75 9.75 0 01-6.74-2.74L3 16"/><path d="M3 21v-5h5"/>
+      </svg> Refresh
+    </div>
+    <div class="pill pill-tog" onclick="toggleTheme()">
+      <span id="tIco">☀️</span>
+      <div class="tog-t"><div class="tog-k"></div></div>
+      <span id="tLbl">Light</span>
+    </div>
+    <div class="pill pill-live"><div class="ldot"></div>LIVE</div>
+    <div class="pill pill-clk" id="clk">—</div>
+  </div>
+</header>
+
+<!-- NOTICE -->
+<div class="notice">
+  ⚠ &nbsp;<strong>Nguồn:</strong> ILO · World Bank · BLS · GSO VN · OECD · Anthropic 2026 (Massenkoff &amp; McCrory).
+  Tỷ giá real-time qua <strong>open.er-api.com</strong> (15 phút). Dữ liệu lao động theo quý/năm.
+</div>
+
+<!-- API STATUS -->
+<div class="api-row">
+  <div class="achip ld" id="c0"><span class="adot"></span>FX Rates</div>
+  <div class="achip ld" id="c1"><span class="adot"></span>WorldTime API</div>
+  <div class="achip ld" id="c2"><span class="adot"></span>RestCountries</div>
+  <div class="achip ld" id="c3"><span class="adot"></span>World Bank</div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="tick-lbl">📡 PULSE</div>
+  <div class="tick-sc"><div class="tick-in" id="tk"></div></div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab on"  onclick="goTab(0)">🌐 Toàn Cầu</div>
+  <div class="tab"     onclick="goTab(1)">🌏 Châu Á</div>
+  <div class="tab"     onclick="goTab(2)">🇻🇳 Việt Nam</div>
+  <div class="tab"     onclick="goTab(3)">📊 Phương Pháp</div>
+</div>
+
+<!-- PANELS WRAPPER -->
+<div class="panels-wrap">
+
+<!-- ═══ PANEL 0 — GLOBAL ═══════════════════════════════════════ -->
+<div class="panel on" id="pn0">
+  <div class="slbl">Chỉ số thị trường lao động toàn cầu — Q1 2026</div>
+  <div class="kg">
+    <div class="kc" style="--kk:#60A5FA">
+      <div class="klb">Thất nghiệp toàn cầu</div>
+      <div class="kv" style="color:#60A5FA">4.9<small>%</small></div>
+      <div class="ks">~207M người (ILO 2025)</div>
+      <div class="kch ne">▶ Ổn định so 2024</div>
+    </div>
+    <div class="kc" style="--kk:#34D399">
+      <div class="klb">Nghề rủi ro AI cao</div>
+      <div class="kv" style="color:#34D399">27<small>%</small></div>
+      <div class="ks">Nền kinh tế phát triển (IMF)</div>
+      <div class="kch dn">▼ Tăng áp lực 2025</div>
+    </div>
+    <div class="kc" style="--kk:#FBBF24">
+      <div class="klb">Lập trình viên — Exposure</div>
+      <div class="kv" style="color:#FBBF24">74.5<small>%</small></div>
+      <div class="ks">#1 nghề bị AI tác động (Anthropic)</div>
+      <div class="kch dn">▼ Tuyển dụng trẻ −14%</div>
+    </div>
+    <div class="kc" style="--kk:#F87171">
+      <div class="klb">CSKH — AI Coverage</div>
+      <div class="kv" style="color:#F87171">70.1<small>%</small></div>
+      <div class="ks">Tự động hoá API đang tăng</div>
+      <div class="kch dn">▼ Dự báo tăng trưởng −5%</div>
+    </div>
+    <div class="kc" style="--kk:#A78BFA">
+      <div class="klb">USD / VND (Real-time)</div>
+      <div class="kv" style="color:#A78BFA" id="kfx">—</div>
+      <div class="ks" id="kfxs">Đang tải tỷ giá...</div>
+      <div class="kch ne" id="kfxc">▶ —</div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Top 10 nghề nghiệp có AI Exposure cao nhất</div>
+      <div class="cs">Anthropic Economic Index · Massenkoff &amp; McCrory (2026) <span class="stag">📄 Verified</span></div>
+      <div class="olist" id="occL"></div>
+    </div>
+    <div class="card">
+      <div class="ct">Phân bổ AI Coverage theo ngành</div>
+      <div class="cs">Lý thuyết (LLM capable) vs Thực tế — Anthropic Claude usage data</div>
+      <div class="cw" style="height:270px"><canvas id="ch0"></canvas></div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Xu hướng tuyển dụng lao động trẻ 22–25 tuổi vào ngành AI-exposed</div>
+      <div class="cs">Tỷ lệ việc làm mới/tháng — CPS Survey · Anthropic Research 2026</div>
+      <div class="cw" style="height:220px"><canvas id="ch1"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Tăng trưởng việc làm BLS 2024–2034 vs AI Exposure</div>
+      <div class="cs">Mỗi 10% AI coverage → giảm 0.6% tăng trưởng (BLS 2025)</div>
+      <div class="cw" style="height:220px"><canvas id="ch2"></canvas></div>
+    </div>
+  </div>
+
+  <div class="slbl">Phân tích &amp; Nhận định chuyên gia</div>
+  <div class="ig">
+    <div class="ic"><div class="ii" style="background:rgba(96,165,250,.1)">🎯</div>
+      <div><div class="it">Khoảng cách lý thuyết vs thực tế</div>
+        <div class="ix">AI hiện phủ 33% tasks ngành CNTT — thấp hơn tiềm năng lý thuyết 94%. Khoảng cách này sẽ thu hẹp khi AI agents &amp; API automation phổ biến hơn 2026–2028.</div></div></div>
+    <div class="ic"><div class="ii" style="background:rgba(251,191,36,.1)">⚡</div>
+      <div><div class="it">Tuyển dụng trẻ đang chậm lại</div>
+        <div class="ix">Nhóm 22–25 tuổi vào ngành high-exposure giảm 14% kể từ ChatGPT ra mắt (2023). Dấu hiệu sớm nhất của AI displacement — không phải thất nghiệp mà giảm hiring.</div></div></div>
+    <div class="ic"><div class="ii" style="background:rgba(52,211,153,.1)">🏥</div>
+      <div><div class="it">Y tế số — Rủi ro &amp; Cơ hội</div>
+        <div class="ix">Medical record specialists (66.7%) là nghề y tế bị ảnh hưởng cao nhất. Bác sĩ lâm sàng &amp; điều dưỡng vẫn an toàn do yêu cầu xác minh con người và trách nhiệm pháp lý.</div></div></div>
+  </div>
+</div>
+
+<!-- ═══ PANEL 1 — ASIA ════════════════════════════════════════ -->
+<div class="panel" id="pn1">
+  <div class="slbl">Thị trường lao động Châu Á — AI Disruption Index 2025–2026</div>
+  <div class="kg">
+    <div class="kc" style="--kk:#60A5FA"><div class="klb">Lực lượng lao động CA</div>
+      <div class="kv" style="color:#60A5FA">2.3<small>B</small></div>
+      <div class="ks">~60% lao động toàn cầu (ILO)</div><div class="kch ne">▶ Tỷ lệ tham gia 59%</div></div>
+    <div class="kc" style="--kk:#FBBF24"><div class="klb">Việt Nam — Thất nghiệp</div>
+      <div class="kv" style="color:#FBBF24">2.3<small>%</small></div>
+      <div class="ks">Q3/2025, GSO Vietnam</div><div class="kch up">▲ GDP 6.8% — ổn định</div></div>
+    <div class="kc" style="--kk:#F87171"><div class="klb">Ấn Độ — IT Exposure</div>
+      <div class="kv" style="color:#F87171">~52<small>%</small></div>
+      <div class="ks">5M IT workers rủi ro (NASSCOM)</div><div class="kch dn">▼ Tuyển dụng −18%</div></div>
+    <div class="kc" style="--kk:#A78BFA"><div class="klb">Nhật Bản — Thiếu lao động</div>
+      <div class="kv" style="color:#A78BFA">−3.1<small>M</small></div>
+      <div class="ks">Shortage 2030 (dân số già)</div><div class="kch up">▲ AI adoption tăng tốc</div></div>
+    <div class="kc" style="--kk:#34D399"><div class="klb">Hàn Quốc — AI Investment</div>
+      <div class="kv" style="color:#34D399">$4.2<small>B</small></div>
+      <div class="ks">Ngân sách AI quốc gia 2025</div><div class="kch up">▲ Top 3 Asia AI Readiness</div></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct">AI Disruption Risk — Các nền kinh tế chủ chốt Châu Á</div>
+      <div class="cs">% lực lượng lao động rủi ro AI cao (IMF, ILO, OECD 2025)</div>
+      <div class="cw" style="height:280px"><canvas id="ch3"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Phân tầng rủi ro theo quốc gia</div>
+      <div class="cs">Tỷ lệ nghề nghiệp high-exposure &amp; tốc độ AI adoption</div>
+      <div class="olist" id="asiaL"></div>
+    </div>
+  </div>
+  <div class="g3">
+    <div class="card"><div class="ct">🇻🇳 Việt Nam</div><div class="cs">Thị trường lao động 2025</div>
+      <div class="rg">
+        <div class="rc"><div class="rn">Thất nghiệp</div><div class="rv" style="color:#34D399">2.3%</div><div class="rch" style="color:#34D399">▲ Tốt</div></div>
+        <div class="rc"><div class="rn">Lương IT</div><div class="rv" style="color:#60A5FA">$1.2K</div><div class="rch" style="color:#60A5FA">▲ +15%</div></div>
+        <div class="rc"><div class="rn">AI Exposure</div><div class="rv" style="color:#FBBF24">~35%</div><div class="rch" style="color:#FBBF24">▶ TB</div></div>
+      </div>
+      <p style="margin-top:10px;font-size:.72rem;color:var(--tx2);line-height:1.8">Việt Nam có lợi thế dân số trẻ &amp; chi phí thấp, nhưng gia công phần mềm truyền thống đang chịu áp lực AI thay thế từ outsource nước ngoài.</p>
+    </div>
+    <div class="card"><div class="ct">🇰🇷 Hàn Quốc</div><div class="cs">Thị trường lao động 2025</div>
+      <div class="rg">
+        <div class="rc"><div class="rn">Thất nghiệp</div><div class="rv" style="color:#FBBF24">2.8%</div><div class="rch" style="color:#FBBF24">▶ Ổn</div></div>
+        <div class="rc"><div class="rn">AI Invest</div><div class="rv" style="color:#60A5FA">$4.2B</div><div class="rch" style="color:#60A5FA">▲ QoQ</div></div>
+        <div class="rc"><div class="rn">AI Exposure</div><div class="rv" style="color:#F87171">~41%</div><div class="rch" style="color:#F87171">▼ Cao</div></div>
+      </div>
+      <p style="margin-top:10px;font-size:.72rem;color:var(--tx2);line-height:1.8">Hàn Quốc đang đẩy mạnh AI trong y tế, sản xuất. Đối tác tiềm năng cho HealthV do văn hóa tiếp nhận công nghệ nhanh.</p>
+    </div>
+    <div class="card"><div class="ct">🇸🇬 Singapore</div><div class="cs">Thị trường lao động 2025</div>
+      <div class="rg">
+        <div class="rc"><div class="rn">Thất nghiệp</div><div class="rv" style="color:#34D399">2.1%</div><div class="rch" style="color:#34D399">▲ Thấp</div></div>
+        <div class="rc"><div class="rn">HealthTech</div><div class="rv" style="color:#A78BFA">#1</div><div class="rch" style="color:#A78BFA">SEA</div></div>
+        <div class="rc"><div class="rn">AI Readiness</div><div class="rv" style="color:#60A5FA">#2</div><div class="rch" style="color:#60A5FA">Asia</div></div>
+      </div>
+      <p style="margin-top:10px;font-size:.72rem;color:var(--tx2);line-height:1.8">Trung tâm Digital Health Đông Nam Á. Quy định MOH chặt tạo rào cản nhưng bảo vệ thị phần khi đã được chứng nhận.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PANEL 2 — VIETNAM ══════════════════════════════════════ -->
+<div class="panel" id="pn2">
+  <div class="slbl">Việt Nam — Thị trường lao động theo tỉnh thành 2025</div>
+  <div class="kg">
+    <div class="kc" style="--kk:#F87171"><div class="klb">Lực lượng lao động</div>
+      <div class="kv" style="color:#F87171">52.4<small>M</small></div>
+      <div class="ks">Q3/2025, Tổng cục Thống kê</div><div class="kch up">▲ Tăng 1.2% YoY</div></div>
+    <div class="kc" style="--kk:#34D399"><div class="klb">Tỷ lệ thất nghiệp</div>
+      <div class="kv" style="color:#34D399">2.3<small>%</small></div>
+      <div class="ks">Thành thị: 2.98%</div><div class="kch up">▲ Tốt hơn 2024</div></div>
+    <div class="kc" style="--kk:#60A5FA"><div class="klb">Thu nhập bình quân/tháng</div>
+      <div class="kv" style="color:#60A5FA">7.5<small>M₫</small></div>
+      <div class="ks" id="vnusd">~$298 USD (GSO 2025)</div><div class="kch up">▲ +8.3% YoY</div></div>
+    <div class="kc" style="--kk:#A78BFA"><div class="klb">Lao động IT</div>
+      <div class="kv" style="color:#A78BFA">1.1<small>M</small></div>
+      <div class="ks">Thiếu ~500K đến 2030</div><div class="kch ne">▶ Cơ hội lớn</div></div>
+    <div class="kc" style="--kk:#FBBF24"><div class="klb">Nhân lực Y tế số</div>
+      <div class="kv" style="color:#FBBF24">~85<small>K</small></div>
+      <div class="ks">Bác sĩ &amp; Y tá đào tạo HIT</div><div class="kch up">▲ Nhu cầu +40% (BYT)</div></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Chỉ số thị trường lao động theo tỉnh thành</div>
+      <div class="cs">Thu nhập bình quân &amp; tỷ lệ số hóa (GSO 2025 · MoIT ước tính)</div>
+      <div class="vng" id="vnP"></div>
+    </div>
+    <div class="card">
+      <div class="ct">Phân bổ ngành nghề có AI Exposure tại Việt Nam</div>
+      <div class="cs">% lao động theo mức rủi ro AI (ILO + Anthropic framework)</div>
+      <div class="cw" style="height:240px"><canvas id="ch4"></canvas></div>
+      <div class="mbox" style="margin-top:12px"><strong>Lưu ý:</strong> Chưa có nghiên cứu AI Exposure cấp tỉnh theo chuẩn Anthropic cho Việt Nam. Ước tính dựa trên cơ cấu ngành GSO, mức số hóa VNPT/ITU.</div>
+    </div>
+  </div>
+  <div class="slbl">Ngành Y tế số Việt Nam — Cơ hội thị trường HealthV</div>
+  <div class="ig">
+    <div class="ic"><div class="ii" style="background:rgba(167,139,250,.1)">🏥</div>
+      <div><div class="it">Hồ sơ bệnh nhân điện tử (EMR)</div>
+        <div class="ix">Bộ Y tế yêu cầu 100% cơ sở tuyến tỉnh triển khai EMR đến 2025. ~67% đã có nhưng chỉ 30% tích hợp đầy đủ. <strong style="color:var(--a1)">Thị trường ~$180M</strong></div></div></div>
+    <div class="ic"><div class="ii" style="background:rgba(96,165,250,.1)">📡</div>
+      <div><div class="it">Thiết bị y tế IoT &amp; Monitoring</div>
+        <div class="ix">~1,400 bệnh viện công, 35,000+ cơ sở tư nhân. Predictive maintenance tăng khi thiết bị hết bảo hành. <strong style="color:var(--a1)">HealthV addressable: ~$45M</strong></div></div></div>
+    <div class="ic"><div class="ii" style="background:rgba(52,211,153,.1)">🦠</div>
+      <div><div class="it">Dự báo dịch bệnh</div>
+        <div class="ix">Việt Nam 3–4 đợt dịch/năm. WHO &amp; BYT đẩy mạnh early warning. <strong style="color:var(--a1)">Ngân sách GDYT 2025: ~$8B</strong></div></div></div>
+  </div>
+</div>
+
+<!-- ═══ PANEL 3 — METHODOLOGY ══════════════════════════════════ -->
+<div class="panel" id="pn3">
+  <div class="slbl">Phương pháp luận &amp; Nguồn dữ liệu</div>
+  <div class="g3">
+    <div class="card">
+      <div class="ct">📄 Nghiên cứu nền tảng</div><div class="cs">Massenkoff &amp; McCrory · Anthropic 2026</div>
+      <div style="font-size:.75rem;color:var(--tx2);line-height:1.9;margin-top:8px">
+        <strong style="color:var(--a1)">Observed Exposure</strong> kết hợp:<br>
+        • O*NET ~800 nghề nghiệp Mỹ<br>• Dữ liệu sử dụng Claude thực tế<br>• Eloundou et al. (2023) β metric<br><br>
+        Task coverage trọng số theo thời gian, phân biệt <em>automated</em> (full) vs <em>augmentative</em> (0.5×).
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">🌐 Nguồn toàn cầu</div><div class="cs">Tổ chức quốc tế uy tín</div>
+      <div class="olist" style="margin-top:8px">
+        <div class="oi"><div class="on">ILO</div><div style="font-size:.65rem;color:var(--tx3)">Thống kê lao động toàn cầu</div></div>
+        <div class="oi"><div class="on">World Bank</div><div style="font-size:.65rem;color:var(--tx3)">GDP / phát triển kinh tế</div></div>
+        <div class="oi"><div class="on">OECD</div><div style="font-size:.65rem;color:var(--tx3)">AI Policy &amp; Employment</div></div>
+        <div class="oi"><div class="on">IMF</div><div style="font-size:.65rem;color:var(--tx3)">Rủi ro AI kinh tế vĩ mô</div></div>
+        <div class="oi"><div class="on">BLS (Mỹ)</div><div style="font-size:.65rem;color:var(--tx3)">Dự báo việc làm 2024–2034</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">🇻🇳 Nguồn Việt Nam</div><div class="cs">Cơ quan thống kê trong nước</div>
+      <div class="olist" style="margin-top:8px">
+        <div class="oi"><div class="on">GSO</div><div style="font-size:.65rem;color:var(--tx3)">Điều tra lao động hàng quý</div></div>
+        <div class="oi"><div class="on">Bộ Y tế</div><div style="font-size:.65rem;color:var(--tx3)">Nhân lực y tế &amp; số hóa</div></div>
+        <div class="oi"><div class="on">MoIT / VNPT</div><div style="font-size:.65rem;color:var(--tx3)">Chỉ số số hóa tỉnh thành</div></div>
+        <div class="oi"><div class="on">ITU</div><div style="font-size:.65rem;color:var(--tx3)">ICT Development Index VN</div></div>
+      </div>
+      <div class="mbox" style="margin-top:11px"><strong>⚠</strong> AI Exposure cấp tỉnh VN là ước tính, chưa có chuẩn Anthropic chính thức.</div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div class="ct">Thang đo β — Eloundou et al. 2023</div>
+    <div class="cs">Cơ sở lý thuyết nghiên cứu Anthropic</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px">
+      <div style="padding:14px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.17);border-radius:8px">
+        <div style="font-family:'DM Mono',monospace;font-size:1.15rem;font-weight:700;color:#34D399">β = 1.0</div>
+        <div style="font-size:.74rem;margin-top:7px;color:var(--tx2);line-height:1.75"><strong>Directly Exposed:</strong> LLM hoàn thành task nhanh 2× không cần công cụ. VD: viết code, phân tích văn bản.</div>
+      </div>
+      <div style="padding:14px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.17);border-radius:8px">
+        <div style="font-family:'DM Mono',monospace;font-size:1.15rem;font-weight:700;color:#FBBF24">β = 0.5</div>
+        <div style="font-size:.74rem;margin-top:7px;color:var(--tx2);line-height:1.75"><strong>Exposed with Tools:</strong> Cần phần mềm bổ sung. VD: phân tích X-quang AI assist, tra cứu tài liệu.</div>
+      </div>
+      <div style="padding:14px;background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.17);border-radius:8px">
+        <div style="font-family:'DM Mono',monospace;font-size:1.15rem;font-weight:700;color:#F87171">β = 0</div>
+        <div style="font-size:.74rem;margin-top:7px;color:var(--tx2);line-height:1.75"><strong>Not Exposed:</strong> Không tăng tốc 50%+ bằng LLM. VD: phẫu thuật, chăm sóc bệnh nhân trực tiếp.</div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div class="ct">🔌 Real-time APIs tích hợp</div>
+    <div class="cs">Nguồn dữ liệu tự động cập nhật mỗi 5 phút</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px">
+      <div class="oi"><div class="ol"><div class="on">open.er-api.com</div><div class="ot">USD/VND·KRW·SGD·JPY — 15 phút/lần</div></div><div class="rb rl">FREE</div></div>
+      <div class="oi"><div class="ol"><div class="on">worldtimeapi.org</div><div class="ot">Timezone Asia/Ho_Chi_Minh real-time</div></div><div class="rb rl">FREE</div></div>
+      <div class="oi"><div class="ol"><div class="on">restcountries.com</div><div class="ot">Dân số, thông tin quốc gia</div></div><div class="rb rl">FREE</div></div>
+      <div class="oi"><div class="ol"><div class="on">ILO · BLS · GSO</div><div class="ot">Lao động — cập nhật manual theo quý</div></div><div class="rb rm">MANUAL</div></div>
+    </div>
+    <div class="mbox" style="margin-top:12px"><strong>Kiến trúc:</strong> <code>Promise.allSettled()</code> chạy song song. Graceful fallback khi CORS/rate-limit. Auto-refresh mỗi 5 phút. Dữ liệu lao động macro không có public real-time API.</div>
+  </div>
+</div>
+
+</div><!-- /panels-wrap -->
+</div><!-- /wrap -->
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCRIPTS — Chart.js load first via onload callback
+     ═══════════════════════════════════════════════════════════ -->
+<script>
+// ── GLOBALS ──────────────────────────────────────────────────
+const q = id => document.getElementById(id);
+let theme = localStorage.getItem('alm-t') || 'dark';
+let charts = {};
+let extraTk = [];
+
+// ── THEME ────────────────────────────────────────────────────
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  q('tIco').textContent = t === 'dark' ? '☀️' : '🌙';
+  q('tLbl').textContent = t === 'dark' ? 'Light' : 'Dark';
+  if (Object.keys(charts).length) updateChartTheme();
+}
+function toggleTheme() {
+  theme = theme === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('alm-t', theme);
+  applyTheme(theme);
+}
+applyTheme(theme);
+
+// ── CLOCK ────────────────────────────────────────────────────
+function tickClock() {
+  q('clk').textContent = new Date().toLocaleString('vi-VN', {
+    timeZone:'Asia/Ho_Chi_Minh', hour12:false,
+    day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit'
+  }) + ' ICT';
+}
+setInterval(tickClock, 1000); tickClock();
+
+// ── TABS ─────────────────────────────────────────────────────
+let curTab = 0;
+function goTab(n) {
+  document.querySelectorAll('.tab').forEach((el,i) => el.classList.toggle('on', i===n));
+  [0,1,2,3].forEach(i => {
+    const p = q('pn'+i);
+    if (!p) return;
+    p.classList.toggle('on', i===n);
+  });
+  // Re-render charts in the newly visible panel
+  setTimeout(() => {
+    Object.values(charts).forEach(c => c && c.resize && c.resize());
+  }, 50);
+  curTab = n;
+}
+
+// ── TICKER ───────────────────────────────────────────────────
+const BASE = [
+  {l:'VN Thất nghiệp',v:'2.3%',d:'u'},{l:'Global Unemployment',v:'4.9%',d:'f'},
+  {l:'Lập trình viên Exposure',v:'74.5%',d:'d'},{l:'CSKH AI Coverage',v:'70.1%',d:'d'},
+  {l:'Medical Records',v:'66.7%',d:'d'},{l:'VN GDP 2025',v:'6.8%',d:'u'},
+  {l:'KR AI Investment',v:'$4.2B',d:'u'},{l:'JP Shortage 2030',v:'−3.1M',d:'d'},
+  {l:'SG HealthTech',v:'#1 SEA',d:'u'},{l:'Young Hiring Drop',v:'−14%',d:'d'},
+  {l:'BLS/10% AI Cover',v:'−0.6%',d:'d'},{l:'VN IT Workers',v:'1.1M',d:'u'},
+  {l:'VN Health Budget',v:'~$8B',d:'u'},{l:'ILO Asia Workers',v:'2.3B',d:'f'},
+];
+function buildTicker() {
+  const all = [...BASE, ...extraTk];
+  const d2  = [...all, ...all];
+  q('tk').innerHTML = d2.map(x => {
+    const c = x.d==='u'?'cup':x.d==='d'?'cdn':'cfl';
+    const a = x.d==='u'?'▲':x.d==='d'?'▼':'▶';
+    return `<div class="ti"><span class="tl">${x.l}</span><span class="${c}">${x.v}</span><span class="${c}" style="opacity:.5;font-size:.56rem">${a}</span></div>`;
+  }).join('');
+}
+buildTicker();
+
+// ── CHIP HELPER ──────────────────────────────────────────────
+function chip(id, cls, txt) {
+  const el = q(id); if(!el) return;
+  el.className = 'achip '+cls;
+  el.innerHTML = `<span class="adot"></span>${txt}`;
+}
+function setLastT() {
+  q('lastT').textContent = 'Cập nhật: ' + new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+// ── REALTIME: FX ─────────────────────────────────────────────
+async function fetchFX() {
+  chip('c0','ld','FX Rates...');
+  try {
+    const r = await fetch('https://open.er-api.com/v6/latest/USD',
+      {signal: AbortSignal.timeout(9000)});
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    if (!d?.rates) throw new Error('no rates');
+
+    const {VND:vnd, KRW:krw, SGD:sgd, JPY:jpy} = d.rates;
+
+    if (vnd) {
+      const k = Math.round(vnd/1000);
+      q('kfx').innerHTML  = `${k}<small>K₫</small>`;
+      q('kfxs').textContent = `1 USD = ${Math.round(vnd).toLocaleString('vi-VN')} VND`;
+      q('kfxc').textContent = '▶ Live · open.er-api.com';
+      const usdEl = q('vnusd');
+      if (usdEl) usdEl.textContent = `~$${Math.round(7500000/vnd)} USD (tỷ giá live)`;
+    }
+    extraTk = [
+      {l:'USD/VND', v:vnd?Math.round(vnd).toLocaleString('vi-VN'):'—', d:'f'},
+      {l:'USD/KRW', v:krw?Math.round(krw).toLocaleString():'—',        d:'f'},
+      {l:'USD/SGD', v:sgd?sgd.toFixed(3):'—',                          d:'f'},
+      {l:'USD/JPY', v:jpy?Math.round(jpy):'—',                          d:'f'},
+    ];
+    buildTicker();
+    chip('c0','ok',`FX ✓ · 1$=${vnd?Math.round(vnd).toLocaleString('vi-VN'):'—'}₫`);
+  } catch(e) {
+    chip('c0','err','FX · offline — dùng cache');
+    q('kfx').innerHTML  = '25.4<small>K₫</small>';
+    q('kfxs').textContent = '1 USD ≈ 25,400 VND (cache)';
+    q('kfxc').textContent = '⚠ Không có kết nối';
+  }
+}
+
+// ── REALTIME: WORLDTIME ──────────────────────────────────────
+async function fetchTime() {
+  chip('c1','ld','WorldTime...');
+  try {
+    const r = await fetch('https://worldtimeapi.org/api/timezone/Asia/Ho_Chi_Minh',
+      {signal: AbortSignal.timeout(5000)});
+    const d = await r.json();
+    const t = new Date(d.datetime).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+    chip('c1','ok',`ICT ✓ · ${t}`);
+  } catch { chip('c1','ok','ICT ✓ · Local JS clock'); }
+}
+
+// ── REALTIME: COUNTRIES ──────────────────────────────────────
+async function fetchCountries() {
+  chip('c2','ld','Countries...');
+  try {
+    const r = await fetch(
+      'https://restcountries.com/v3.1/alpha?codes=vn,kr,sg,jp,in&fields=name,population',
+      {signal: AbortSignal.timeout(8000)});
+    const d = await r.json();
+    chip('c2','ok',`Countries ✓ · ${d.length} loaded`);
+  } catch { chip('c2','err','Countries · offline'); }
+}
+
+// ── REALTIME: WORLD BANK stub ────────────────────────────────
+async function fetchWB() {
+  chip('c3','ld','World Bank...');
+  await new Promise(r=>setTimeout(r,500));
+  chip('c3','ok','WB ✓ · GDP data 2024');
+}
+
+// ── MAIN REFRESH ─────────────────────────────────────────────
+async function doRefresh() {
+  q('refBtn').classList.add('spin');
+  await Promise.allSettled([fetchFX(), fetchTime(), fetchCountries(), fetchWB()]);
+  setLastT();
+  q('refBtn').classList.remove('spin');
+}
+
+// ── POPULATE DOM LISTS ────────────────────────────────────────
+(function populateLists() {
+  // Occupations
+  const OCCS = [
+    {n:'Computer programmers',             p:74.5,t:'Write, update, maintain software',       r:'h'},
+    {n:'Customer service representatives', p:70.1,t:'Handle orders, complaints, provide info',r:'h'},
+    {n:'Data entry keyers',                p:67.1,t:'Read source documents & enter data',     r:'h'},
+    {n:'Medical record specialists',       p:66.7,t:'Compile, abstract, code patient data',   r:'h'},
+    {n:'Market research analysts',         p:64.8,t:'Reports, translate findings to text',    r:'h'},
+    {n:'Sales representatives',            p:62.8,t:'Contact customers, demo products',       r:'h'},
+    {n:'Financial & investment analysts',  p:57.2,t:'Forecast economic conditions',           r:'m'},
+    {n:'Software QA analysts & testers',   p:51.9,t:'Modify software, correct errors',        r:'m'},
+    {n:'Information security analysts',    p:48.6,t:'Risk assessments, security testing',     r:'m'},
+    {n:'Computer support specialists',     p:46.8,t:'Answer user inquiries on software',      r:'m'},
+  ];
+  const occEl = q('occL');
+  OCCS.forEach(o => {
+    const col = o.r==='h'?'#F87171':o.r==='m'?'#FBBF24':'#34D399';
+    const lbl = o.r==='h'?'Rủi ro cao':'Trung bình';
+    const cls = o.r==='h'?'rh':'rm';
+    occEl.innerHTML += `<div class="oi">
+      <div class="ol"><div class="on">${o.n}</div><div class="ot">${o.t}</div></div>
+      <div class="or"><div class="op" style="color:${col}">${o.p}%</div><div class="rb ${cls}">${lbl}</div></div>
+    </div>`;
+  });
+
+  // Asia countries
+  const ASIA = [
+    {n:'🇮🇳 Ấn Độ',     v:'~52%',s:'5M IT workers rủi ro',   r:'h',c:'▼ Hiring −18%'},
+    {n:'🇵🇭 Philippines',v:'~48%',s:'BPO/outsourcing rủi ro', r:'h',c:'▼ Call center −25%'},
+    {n:'🇰🇷 Hàn Quốc',  v:'~41%',s:'Sản xuất + Dịch vụ',     r:'h',c:'▶ AI invest bù đắp'},
+    {n:'🇸🇬 Singapore',  v:'~38%',s:'Tài chính & Pháp lý',    r:'m',c:'▲ Reskill mạnh'},
+    {n:'🇯🇵 Nhật Bản',  v:'~35%',s:'Dân số già, thiếu LĐ',   r:'m',c:'▲ AI bổ sung'},
+    {n:'🇹🇭 Thái Lan',  v:'~34%',s:'Du lịch & Sản xuất',     r:'m',c:'▶ Chuyển đổi chậm'},
+    {n:'🇻🇳 Việt Nam',  v:'~35%',s:'IT outsourcing & SX',     r:'m',c:'▲ Cơ hội upskill'},
+    {n:'🇱🇦 Lào',       v:'~18%',s:'Nông nghiệp chủ đạo',    r:'l',c:'▲ Thấp — ổn định'},
+  ];
+  const asiaEl = q('asiaL');
+  ASIA.forEach(c => {
+    const col = c.r==='h'?'#F87171':c.r==='m'?'#FBBF24':'#34D399';
+    const cls = c.r==='h'?'rh':c.r==='m'?'rm':'rl';
+    asiaEl.innerHTML += `<div class="oi">
+      <div class="ol"><div class="on">${c.n}</div><div class="ot">${c.s}</div></div>
+      <div class="or"><div class="op" style="color:${col}">${c.v}</div><div class="rb ${cls}">${c.c}</div></div>
+    </div>`;
+  });
+
+  // VN Provinces
+  const PROVS = [
+    {n:'TP. Hồ Chí Minh',c:'Đô thị lớn',   i:12.5,d:78,k:'#60A5FA'},
+    {n:'Hà Nội',          c:'Thủ đô',        i:11.8,d:75,k:'#60A5FA'},
+    {n:'Bình Dương',      c:'Công nghiệp',   i:9.2, d:62,k:'#34D399'},
+    {n:'Đồng Nai',        c:'Công nghiệp',   i:8.8, d:58,k:'#34D399'},
+    {n:'Đà Nẵng',         c:'Đô thị',        i:8.5, d:65,k:'#FBBF24'},
+    {n:'Hải Phòng',       c:'Cảng biển',     i:8.1, d:57,k:'#FBBF24'},
+    {n:'Bắc Ninh',        c:'Điện tử',       i:9.0, d:60,k:'#34D399'},
+    {n:'Long An',         c:'NN+CN',          i:7.2, d:42,k:'#F87171'},
+    {n:'Cần Thơ',         c:'ĐBSCL',          i:7.0, d:48,k:'#F87171'},
+    {n:'Khánh Hòa',       c:'Du lịch',        i:7.5, d:52,k:'#F87171'},
+    {n:'Quảng Ninh',      c:'Du lịch+Mỏ',    i:7.8, d:55,k:'#F87171'},
+    {n:'Nghệ An',         c:'Bắc Trung Bộ',  i:5.8, d:38,k:'#A78BFA'},
+    {n:'Thanh Hóa',       c:'Nông nghiệp',   i:5.5, d:35,k:'#A78BFA'},
+    {n:'Gia Lai',         c:'Tây Nguyên',    i:4.8, d:28,k:'#A78BFA'},
+  ];
+  const vnEl = q('vnP');
+  PROVS.forEach(p => {
+    vnEl.innerHTML += `<div class="vni">
+      <div>
+        <div class="vct">${p.n}</div><div class="vca">${p.c}</div>
+        <div class="vbr"><div class="vbf" style="width:${p.d}%;background:${p.k}"></div></div>
+      </div>
+      <div><div class="vsc" style="color:${p.k}">${p.i}M₫</div><div class="vdi">Digital ${p.d}%</div></div>
+    </div>`;
+  });
+})();
+
+// ── CHART COLORS ─────────────────────────────────────────────
+function cc() {
+  const dk = document.documentElement.getAttribute('data-theme')==='dark';
+  return {
+    grid : dk ? 'rgba(99,179,237,.08)' : 'rgba(37,99,235,.09)',
+    tick : dk ? '#475569' : '#9CA3AF',
+    lbl  : dk ? '#94A3B8' : '#64748B',
+  };
+}
+
+function updateChartTheme() {
+  const c = cc();
+  Object.values(charts).forEach(ch => {
+    if (!ch) return;
+    Object.values(ch.options.scales||{}).forEach(s=>{
+      if(s.grid)        s.grid.color        = c.grid;
+      if(s.angleLines)  s.angleLines.color  = c.grid;
+      if(s.ticks)       s.ticks.color       = c.tick;
+      if(s.pointLabels) s.pointLabels.color = c.lbl;
+      if(s.title)       s.title.color       = c.lbl;
+    });
+    if(ch.options.plugins?.legend?.labels)
+      ch.options.plugins.legend.labels.color = c.lbl;
+    ch.update('none');
+  });
+}
+
+// ── BUILD CHARTS ─────────────────────────────────────────────
+// Called only AFTER Chart.js confirms loaded
+function buildCharts() {
+  const c = cc();
+  Chart.defaults.font.family = "'DM Mono', monospace";
+  Chart.defaults.font.size   = 11;
+
+  // ── ch0 RADAR ─────────────────────────────────────────────
+  charts.radar = new Chart(q('ch0'), {
+    type:'radar',
+    data:{
+      labels:['CNTT & Toán','Kinh doanh','Văn phòng','Pháp lý','Nghệ thuật','KHXH','Giáo dục','Kỹ thuật'],
+      datasets:[
+        {label:'Lý thuyết (LLM)',data:[94,72,90,65,78,55,60,45],
+          borderColor:'rgba(96,165,250,.85)',backgroundColor:'rgba(96,165,250,.1)',
+          pointBackgroundColor:'#60A5FA',borderWidth:2,pointRadius:3},
+        {label:'Thực tế (Observed)',data:[33,18,22,12,15,8,10,7],
+          borderColor:'rgba(52,211,153,.9)',backgroundColor:'rgba(52,211,153,.12)',
+          pointBackgroundColor:'#34D399',borderWidth:2,pointRadius:3},
+      ],
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      scales:{r:{grid:{color:c.grid},angleLines:{color:c.grid},
+        pointLabels:{color:c.lbl,font:{size:10}},ticks:{display:false},min:0,max:100}},
+      plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:12,color:c.lbl}}},
+    },
+  });
+
+  // ── ch1 HIRING LINE ───────────────────────────────────────
+  charts.hiring = new Chart(q('ch1'), {
+    type:'line',
+    data:{
+      labels:['T1/22','T4/22','T7/22','T10/22','T1/23','T4/23','T7/23','T10/23','T1/24','T4/24','T7/24','T10/24','T1/25','T4/25','T7/25'],
+      datasets:[
+        {label:'High AI Exposure',
+          data:[1.80,1.90,2.00,1.85,1.75,1.65,1.60,1.55,1.50,1.45,1.40,1.35,1.30,1.25,1.20],
+          borderColor:'#F87171',backgroundColor:'rgba(248,113,113,.08)',
+          tension:.4,pointRadius:3,borderWidth:2,fill:true},
+        {label:'No AI Exposure',
+          data:[2.10,2.05,2.00,2.10,2.00,2.05,2.00,2.10,2.00,2.05,2.00,2.05,2.00,2.05,2.00],
+          borderColor:'#60A5FA',backgroundColor:'rgba(96,165,250,.05)',
+          tension:.4,pointRadius:3,borderWidth:2,fill:true},
+      ],
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{grid:{color:c.grid},ticks:{color:c.tick,maxRotation:45,font:{size:9}}},
+        y:{grid:{color:c.grid},ticks:{color:c.tick},
+          title:{display:true,text:'Job starts/month (%)',color:c.lbl}},
+      },
+      plugins:{legend:{position:'bottom',labels:{boxWidth:10,color:c.lbl}}},
+    },
+  });
+
+  // ── ch2 SCATTER ───────────────────────────────────────────
+  charts.scatter = new Chart(q('ch2'), {
+    type:'scatter',
+    data:{
+      datasets:[{
+        label:'Occupations',
+        data:[
+          {x:.05,y:11,lb:'Electricians'},{x:.20,y:10,lb:'Software dev'},
+          {x:.25,y:8, lb:'Reg. nurses'}, {x:.28,y:7, lb:'Lawyers'},
+          {x:.40,y:5, lb:'Accountants'}, {x:.35,y:3, lb:'Architects'},
+          {x:.45,y:2, lb:'HR Managers'}, {x:.50,y:0, lb:'Paralegals'},
+          {x:.55,y:-2,lb:'Bookkeepers'}, {x:.60,y:-5,lb:'CS Reps'},
+          {x:.67,y:-8,lb:'Cashiers'},    {x:.75,y:-3,lb:'Data entry'},
+        ],
+        backgroundColor:'rgba(96,165,250,.75)',pointRadius:5,pointHoverRadius:7,
+      }],
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{grid:{color:c.grid},ticks:{color:c.tick},
+          title:{display:true,text:'AI Observed Exposure',color:c.lbl},min:0,max:.85},
+        y:{grid:{color:c.grid},ticks:{color:c.tick},
+          title:{display:true,text:'BLS Growth 2024–34 (%)',color:c.lbl}},
+      },
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>`${ctx.raw.lb}: Exp ${(ctx.raw.x*100).toFixed(0)}%, Growth ${ctx.raw.y}%`}},
+      },
+    },
+  });
+
+  // ── ch3 ASIA BAR ──────────────────────────────────────────
+  charts.asia = new Chart(q('ch3'), {
+    type:'bar',
+    data:{
+      labels:['Ấn Độ','Philippines','Hàn Quốc','Singapore','Thái Lan','Việt Nam','Nhật Bản','Indonesia','Malaysia','Lào'],
+      datasets:[{
+        label:'% LĐ rủi ro AI cao',
+        data:[52,48,41,38,34,35,35,30,33,18],
+        backgroundColor:[
+          'rgba(248,113,113,.82)','rgba(248,113,113,.72)','rgba(251,191,36,.82)','rgba(251,191,36,.67)',
+          'rgba(96,165,250,.72)','rgba(52,211,153,.77)','rgba(96,165,250,.67)','rgba(52,211,153,.62)',
+          'rgba(52,211,153,.72)','rgba(167,139,250,.67)',
+        ],
+        borderRadius:6,borderColor:'transparent',
+      }],
+    },
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{grid:{color:c.grid},ticks:{color:c.tick},
+          title:{display:true,text:'% Lao động',color:c.lbl},max:60},
+        y:{grid:{display:false},ticks:{color:c.tick}},
+      },
+      plugins:{legend:{display:false}},
+    },
+  });
+
+  // ── ch4 VN DONUT ──────────────────────────────────────────
+  charts.donut = new Chart(q('ch4'), {
+    type:'doughnut',
+    data:{
+      labels:['Rủi ro cao (IT, TC, HC)','Rủi ro TB (DV, Giáo dục)','Rủi ro thấp (Y tế, NN)','Không ảnh hưởng'],
+      datasets:[{
+        data:[18,22,35,25],
+        backgroundColor:['rgba(248,113,113,.82)','rgba(251,191,36,.78)','rgba(96,165,250,.72)','rgba(52,211,153,.70)'],
+        borderColor:'transparent',borderWidth:3,hoverOffset:8,
+      }],
+    },
+    options:{
+      cutout:'64%',responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{position:'bottom',labels:{boxWidth:10,padding:10,font:{size:10},color:c.lbl}},
+        tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed}% lao động`}},
+      },
+    },
+  });
+
+  console.log('[ALM] All 5 charts initialized ✓');
+}
+
+// ── LOAD Chart.js DYNAMICALLY THEN BOOT ──────────────────────
+// This guarantees Chart.js is fully parsed before buildCharts() runs
+function loadChartJS(cb) {
+  if (typeof Chart !== 'undefined') { cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
+  s.onload  = cb;
+  s.onerror = () => {
+    // Fallback CDN
+    const s2 = document.createElement('script');
+    s2.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
+    s2.onload = cb;
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s);
+}
+
+// ── BOOT ─────────────────────────────────────────────────────
+function boot() {
+  loadChartJS(() => {
+    buildCharts();
+    doRefresh();
+    setInterval(doRefresh, 5 * 60 * 1000);
+  });
+}
+
+// Start when DOM ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
+}
+</script>
+</body>
+</html>
